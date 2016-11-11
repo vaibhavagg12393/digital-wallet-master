@@ -2,8 +2,8 @@ import time
 from threading import Thread
 import os
 
-fname = os.path.realpath("./digital-wallet-master/batch_payment.csv")
-sname = os.path.realpath("./digital-wallet-master/stream_payment.csv")
+fname = os.path.realpath("./digital-wallet-master/paymo_input/batch_payment.csv")
+sname = os.path.realpath("./digital-wallet-master/paymo_input/stream_payment.csv")
 output1 = os.path.realpath("./digital-wallet-master/paymo_output/output1.txt")
 output2 = os.path.realpath("./digital-wallet-master/paymo_output/output2.txt")
 output3 = os.path.realpath("./digital-wallet-master/paymo_output/output3.txt")
