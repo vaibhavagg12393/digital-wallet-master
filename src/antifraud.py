@@ -4,11 +4,15 @@ from threading import Thread
 fname = "/Users/Vaibhav/Documents/digital-wallet-master/batch_payment.csv"
 sname = "/Users/Vaibhav/Documents/digital-wallet-master/stream_payment.csv"
 output1 = "/Users/Vaibhav/Documents/digital-wallet-master/paymo_output/output1.txt"
-output2 = "/Users/Vaibhav/Documents/digital-wallet-master/paymo_output/output2.txt"
+output2 = "/Users/Vaibhav/Documents/digital-wallet-master/paymo_output/outputs2.txt"
 output3 = "/Users/Vaibhav/Documents/digital-wallet-master/paymo_output/output3.txt"
 outputGraph = "/Users/Vaibhav/Documents/digital-wallet-master/paymo_output/outputGraph.txt"
 
 graph={}
+
+# Create a graph to store sender with their receivers and vice-versa
+# used a Set because Sets are significantly faster when it comes to determining if an object is
+# present in the set (as in x in s)
 
 def past_graph():
     with open(fname) as fp:
@@ -18,17 +22,18 @@ def past_graph():
                 id2 = int(line.strip().split(",")[2].strip())
                 key = str(id1)
                 value = str(id2)
-                graph.setdefault(key, [])
+                graph.setdefault(key, set())
                 if value not in graph[key]:
-                    graph[key].append(value)
+                    graph[key].add(value)
                 key = str(id2)
                 value = str(id1)
-                graph.setdefault(key, [])
+                graph.setdefault(key, set())
                 if value not in graph[key]:
-                    graph[key].append(value)
+                    graph[key].add(value)
             except ValueError:
                     continue
 
+# Implementing the first Feature (Direct transfer)
 
 def feature1(id1,id2):
     if graph.get(id1)==None:
@@ -38,7 +43,9 @@ def feature1(id1,id2):
     else:
         return "unverified"
 
-def feature2(id1,id2,origin,count):
+#Implementing second feature (Upto 1 mututal friend)
+
+def feature2(id1,id2,origin,count,parents):
     if graph.get(id1):
         if id2 in graph[id1]:
             count = count+1
@@ -49,10 +56,11 @@ def feature2(id1,id2,origin,count):
         else:
             count = count + 1
             for items in graph[id1]:
-                if items!=origin and graph.get(items):
+                if items not in parents and graph.get(items) and items!=origin:
                     origin = id1
+                    parents.add(id1)
                     if count<=2:
-                        out = feature2(items,id2,origin,count)
+                        out = feature2(items,id2,origin,count,parents)
                         if out=="trusted":
                             return "trusted"
                     else:
@@ -63,7 +71,10 @@ def feature2(id1,id2,origin,count):
     else:
         return "unverified"
 
-def feature3(id1,id2,origin,count):
+#   Implementing third feature (Upto 3 mutual friends)
+# Example: If A and E have 3 mutual friends, say B,C, and D, then A can trasfer money to E or vice-versa.
+
+def feature3(id1,id2,origin,count,parents):
     if graph.get(id1):
         if id2 in graph[id1]:
             count = count+1
@@ -74,10 +85,11 @@ def feature3(id1,id2,origin,count):
         else:
             count = count + 1
             for items in graph[id1]:
-                if items!=origin and graph.get(items):
+                if items!=origin and items not in parents and graph.get(items):
                     origin = id1
+                    parents.add(id1)
                     if count<4:
-                        out = feature3(items,id2,origin,count)
+                        out = feature3(items,id2,origin,count,parents)
                         if out=="trusted":
                             return "trusted"
                     else:
@@ -87,6 +99,10 @@ def feature3(id1,id2,origin,count):
             return "unverified"
     else:
         return "unverified"
+
+# I created 3 different functions (result1, result2, result3) for reading inputs from stream_payments.csv file
+# The reason was I was trying to implement multi-threading so that I could get output1, output2 and output3 simultaneously.
+# But it was still taking a lot of time, hence I removed multi-threading. The functions are called serially now.
 
 def result1():
     f1 = open(output1, 'w')
@@ -110,7 +126,9 @@ def result2():
                 id2=int(line.strip().split(",")[2].strip())
                 origin = str(id1)
                 count = 0
-                outcome2 = feature2(str(id1),str(id2),origin,count)
+                parents=set()
+                parents.add(str(id1))
+                outcome2 = feature2(str(id1),str(id2),origin,count,parents)
                 print >> f2, outcome2
             except ValueError:
                 continue
@@ -125,29 +143,23 @@ def result3():
                 id2=int(line.strip().split(",")[2].strip())
                 origin = str(id1)
                 count = 0
-                outcome3 = feature3(str(id1),str(id2),origin,count)
+                parents=set()
+                parents.add(str(id1))
+                outcome3 = feature3(str(id1),str(id2),origin,count,parents)
                 print >> f3, outcome3
             except ValueError:
                 continue
     f3.close()
 
+# The main function first creates a graph using the data from batch_payments
+# Once a graph is created, 3 result functions are called to print 3 different types of outputs (output1, output2, output3)
+
 if __name__ == '__main__':
-    start_time = time.time()
     past_graph()
-    print("Time to create graph --- %s seconds ---" % (time.time() - start_time))
-    f4 = open(outputGraph, 'w')
-    print >> f4, graph
-    print "Result 1 start"
-    start_time = time.time()
-    #result1()
-    print("Time Result 1 --- %s seconds ---" % (time.time() - start_time))
-    print "Result 2 start"
-    start_time = time.time()
-    #result2()
-    print("Time Result 2 --- %s seconds ---" % (time.time() - start_time))
-    print "Result 3 start"
-    start_time = time.time()
+    #f4 = open(outputGraph, 'w')
+    #print >> f4, graph
+    result1()
+    result2()
     result3()
-    print("Time Result 3 --- %s seconds ---" % (time.time() - start_time))
 
 
