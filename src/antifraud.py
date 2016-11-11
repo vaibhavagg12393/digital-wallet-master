@@ -1,12 +1,13 @@
 import time
 from threading import Thread
+import os
 
-fname = "/Users/Vaibhav/Documents/digital-wallet-master/batch_payment.csv"
-sname = "/Users/Vaibhav/Documents/digital-wallet-master/stream_payment.csv"
-output1 = "/Users/Vaibhav/Documents/digital-wallet-master/paymo_output/output1.txt"
-output2 = "/Users/Vaibhav/Documents/digital-wallet-master/paymo_output/outputs2.txt"
-output3 = "/Users/Vaibhav/Documents/digital-wallet-master/paymo_output/output3.txt"
-outputGraph = "/Users/Vaibhav/Documents/digital-wallet-master/paymo_output/outputGraph.txt"
+fname = os.path.realpath("./digital-wallet-master/batch_payment.csv")
+sname = os.path.realpath("./digital-wallet-master/stream_payment.csv")
+output1 = os.path.realpath("./digital-wallet-master/paymo_output/output1.txt")
+output2 = os.path.realpath("./digital-wallet-master/paymo_output/output2.txt")
+output3 = os.path.realpath("./digital-wallet-master/paymo_output/output3.txt")
+outputGraph = os.path.realpath("./digital-wallet-master/paymo_output/outputGraph.txt")
 
 graph={}
 
